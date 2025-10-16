@@ -14,7 +14,6 @@ public class QaPairTest {
         qaPair.setId(1);
         qaPair.setQuestion("测试问题");
         qaPair.setAnswer("测试答案");
-
         // 可选：添加断言（验证结果是否符合预期，更规范）
         assertEquals(1, qaPair.getId());  // 断言 ID 为 1
         assertTrue(qaPair.getQuestion().contains("测试"));  // 断言问题包含“测试”
