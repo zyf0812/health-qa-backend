@@ -1,5 +1,6 @@
 package com.health.controller;
 
+import com.health.commom.Result;
 import com.health.service.QaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,8 +14,13 @@ public class QaController {
 
     // 问答查询接口：POST请求，参数question
     @PostMapping("/api/qa/query")
-    public String queryAnswer(@RequestParam String question) {
-        // 调用Service处理业务，返回结果
-        return qaService.getAnswer(question);
+    public Result<String> queryAnswer(@RequestParam String question) {
+        // 参数校验（非空判断）
+        if (question == null || question.trim().isEmpty()) {
+            return Result.fail("请输入你的健康问题！");
+        }
+        String answer = qaService.getAnswer(question);
+        return Result.success(answer);
     }
+
 }
