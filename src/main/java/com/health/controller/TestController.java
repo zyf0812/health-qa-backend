@@ -1,4 +1,4 @@
-package com.health.demo.controller;
+package com.health.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

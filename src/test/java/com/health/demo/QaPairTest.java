@@ -1,6 +1,6 @@
 package com.health.demo;
 
-import com.health.demo.entity.QaPair;
+import com.health.entity.QaPair;
 import org.junit.jupiter.api.Test;  // JUnit 5 注解（关键）
 import static org.junit.jupiter.api.Assertions.*;  // 可选，用于断言
 
