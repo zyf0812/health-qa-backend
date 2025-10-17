@@ -1,4 +1,4 @@
-package com.health.commom;
+package com.health.common;
 
 import lombok.Data;
 

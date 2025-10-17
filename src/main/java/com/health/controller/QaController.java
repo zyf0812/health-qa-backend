@@ -1,8 +1,8 @@
 package com.health.controller;
 
-import com.health.commom.Result;
+import com.health.common.Result;
 import com.health.service.QaService;
-import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
