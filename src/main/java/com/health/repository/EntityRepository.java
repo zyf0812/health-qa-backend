@@ -1,10 +1,8 @@
 package com.health.repository;
 
 import com.health.entity.Entity;
-import com.health.entity.QaPair;
-import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
@@ -21,5 +19,7 @@ public interface EntityRepository extends CrudRepository<Entity, Integer> {
 
     //查询所有实体（继承 CrudRepository 的 findAll() 方法默认返回 Iterable，这里封装为 List）
     @Override
+    @NonNull
     List<Entity> findAll();
+
 }
