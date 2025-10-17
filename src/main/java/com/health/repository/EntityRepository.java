@@ -18,4 +18,8 @@ public interface EntityRepository extends CrudRepository<Entity, Integer> {
      * @return 符合该类型的实体列表
      */
     List<Entity> findByType(String type);
+
+    //查询所有实体（继承 CrudRepository 的 findAll() 方法默认返回 Iterable，这里封装为 List）
+    @Override
+    List<Entity> findAll();
 }
