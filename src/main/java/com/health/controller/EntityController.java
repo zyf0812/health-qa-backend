@@ -3,11 +3,9 @@ package com.health.controller;
 import com.health.common.Result;
 import com.health.entity.Entity;
 import com.health.service.EntityService;
-import com.health.service.QaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
