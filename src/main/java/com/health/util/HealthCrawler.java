@@ -19,7 +19,7 @@ public class HealthCrawler {
 
     public List<Map<String, String>> crawlDxyColdData() throws IOException {
         List<Map<String, String>> dataList = new ArrayList<>();
-        String url = "https://www.zxwys.com/";
+        String url = "https://club.xywy.com/?fromurl=xywyhomepage";
         // 模拟浏览器请求（避免被反爬）
         Document doc = Jsoup.connect(url)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36")
@@ -30,18 +30,20 @@ public class HealthCrawler {
                 .ignoreHttpErrors(true)
                 .timeout(10000)
                 .get();
+        //System.out.println(doc.toString());
 
         // 获得不同问题页的Url，放到集合
-        Elements questionUrl = doc.select("div.item");  // 问题网址
+        Elements questionUrl = doc.select("div.new-list-box");  // 问题网址
         List<String> Url = new ArrayList<>();
         for (Element element : questionUrl) {
             Elements answers = element.getElementsByTag("a");
-            String href = answers.attr("href");
-            Url.add(href);
+            for (Element answer : answers) {
+                Url.add(answer.absUrl("href"));
+            }
         }
-//        for (String s : Url) {
-//            System.out.println(s);
-//        }
+        /*for (String s : Url) {
+            System.out.println(s);
+        }*/
         //访问每一个问题页面病爬取问题和答案
         for (String href : Url) {
             Document doc1 = Jsoup.connect(href)
@@ -53,11 +55,11 @@ public class HealthCrawler {
                     .ignoreHttpErrors(true)
                     .timeout(10000)
                     .get();
-            Element question = doc1.selectFirst("div.title h1");
+            Element question = doc1.selectFirst("h1.fl");
             String title = question != null ? question.text() : "未找到问题";
-            Element answer = doc1.selectFirst("div.con.htmlcontent");
+            Element answer = doc1.selectFirst("div.replay-content-box");
             String content = answer != null ? answer.text() : "未找到答案";
-            //System.out.println(title+"\n" + content);
+            //System.out.println(title + "\n" + content);
             //过滤无效数据（问题或答案过短）
             Map<String, String> qaMap = new HashMap<>();
             if (title.length() > 5 && content.length() > 20) {
@@ -66,6 +68,11 @@ public class HealthCrawler {
             }
             dataList.add(qaMap);
         }
+//        dataList.forEach(map -> {
+//            map.forEach((k, v) -> {
+//                System.out.println(k + "\t" + v);
+//            });
+//        });
         return dataList;
     }
 }

@@ -21,7 +21,7 @@ public class HealthCrawlerTest {
         List<Map<String, String>> list = healthCrawler.crawlDxyColdData();
         for (Map<String, String> map : list) {
             map.forEach((k, v) -> {
-//                System.out.println(k + "\t" + v);
+               // System.out.println(k + "\t" + v);
             });
         }
     }
