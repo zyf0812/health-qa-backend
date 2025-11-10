@@ -5,6 +5,11 @@ spring:
     password: 123456  # MySQL密码
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # 配置异步请求超时时间
+  mvc:
+    async:
+          request-timeout: 30000  # 30秒
+
 #修改启动端口
 server:
   port: 8080
