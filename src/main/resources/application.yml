@@ -12,7 +12,6 @@ server:
 ai:
   api:
     key: sk-7959fef721174706bc2d71c6080d4402
-    secret:
 
 logging:
   level:

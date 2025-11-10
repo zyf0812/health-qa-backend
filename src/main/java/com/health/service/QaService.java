@@ -1,5 +1,6 @@
 package com.health.service;
 
+import com.health.entity.QaPair;
 import com.health.repository.QaRepository;
 import com.health.util.AiApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,14 @@ public class QaService {
         String aiAnswer = aiApiClient.getAiAnswer("请回答健康问题：" + question);
         List<String> result = new ArrayList<>();
         result.add(aiAnswer);
+
+        // 获取AI的答案后存入数据库
+        QaPair qaPair = new QaPair();
+        qaPair.setQuestion(question);
+        qaPair.setAnswer(aiAnswer);
+        qaRepository.save(qaPair);
+        // 返回结果
         return result;
+
     }
 }

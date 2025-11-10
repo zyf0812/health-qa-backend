@@ -13,8 +13,6 @@ import java.util.Map;
 public class AiApiClient {
     @Value("${ai.api.key}")
     private String apiKey;
-    @Value("${ai.api.secret}")
-    private String apiSecret;
 
     private static final String API_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
 
