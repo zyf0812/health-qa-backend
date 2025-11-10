@@ -66,7 +66,7 @@ public class DataImportService {
                     successCount++;
                 }
             }
-
+            //批量存入数据库
             qaRepository.saveAll(list);
             return "数据导入完成！共爬取" + dataList.size() + "条，成功导入" + successCount + "条（已去重）";
         } catch (IOException e) {

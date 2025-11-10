@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface DetailRepository extends CrudRepository<Entity, Integer> {
     //根据type查询实体并返回list
-    Entity findById(String id);
+    Entity findById(int id);
 }

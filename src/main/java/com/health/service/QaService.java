@@ -1,29 +1,33 @@
 package com.health.service;
 
 import com.health.repository.QaRepository;
+import com.health.util.AiApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service  // 标识这是服务类，处理业务逻辑
+@Service
 public class QaService {
-    // 自动注入Repository（无需new，Spring帮我们创建对象）
     @Autowired
     private QaRepository qaRepository;
 
-    // 问答查询业务方法
+    @Autowired
+    private AiApiClient aiApiClient;
+
     public List<String> getAnswer(String question) {
-        // 调用Repository查询
-        List<String> answer = qaRepository.findAnswerByQuestion(question);
-        // 处理无结果场景
-        if (answer.isEmpty()) {
-            List<String> list = new ArrayList<>();
-            list.add("暂无相关健康知识，可尝试提问：“感冒症状”“高血压饮食");
-            return list;
+        // 1. 先查询本地知识库
+        List<String> localAnswers = qaRepository.findAnswerByQuestion(question);
+        if (!localAnswers.isEmpty()) {
+            return localAnswers;
         }
-        return answer;
+
+        // 2. 本地无结果时调用AI接口
+        String aiAnswer = aiApiClient.getAiAnswer("请回答健康问题：" + question);
+        List<String> result = new ArrayList<>();
+        result.add(aiAnswer);
+        return result;
     }
 }
-

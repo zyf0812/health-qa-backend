@@ -11,7 +11,7 @@ import java.util.List;
 public class DetailService {
     @Autowired
     private DetailRepository detailRepository;
-    public Entity getEntity(String id ) {
+    public Entity getEntity(int id ) {
         return detailRepository.findById(id);
     }
 }

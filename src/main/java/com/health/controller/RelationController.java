@@ -2,7 +2,6 @@ package com.health.controller;
 
 import com.health.common.Result;
 import com.health.entity.EntityTargetDTO;
-import com.health.repository.RelationRepository;
 import com.health.service.RelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
