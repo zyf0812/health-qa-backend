@@ -14,10 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * 寻医问药网健康数据爬虫
- * 功能：爬取疾病相关问题 → 疾病详情页 → 疾病介绍页 → 各标签页文本内容
- */
 @Slf4j
 @Component
 public class HealthCrawler {
@@ -27,13 +23,8 @@ public class HealthCrawler {
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36";
     private static final int TIMEOUT = 15000; // 超时时间延长到15秒，应对网络波动
     private static final String REFERER = "https://www.google.com/";
+    private static final String TARGET_TAG_NAME = "简介"; // 仅该标签提取第一个P标签
 
-    /**
-     * 爬取寻医问药网疾病数据
-     *
-     * @return 疾病数据列表：每个Map包含「疾病名」+ 各标签文本（标签名为键）
-     * @throws IOException 网络请求异常
-     */
     public List<Map<String, String>> crawlDxyColdData() {
         List<Map<String, String>> dataList = new ArrayList<>();
         log.info("开始爬取寻医问药网疾病数据...");
@@ -66,7 +57,7 @@ public class HealthCrawler {
                 return dataList;
             }
 
-            // 4. 第四步：解析疾病介绍页，提取疾病名和各标签文本
+            // 4. 第四步：解析疾病介绍页，提取疾病名和各标签文本（按规则提取）
             dataList = parseDiseaseIntroPages(diseaseIntroUrlList);
             log.info("爬虫结束，共获取 {} 条疾病完整数据", dataList.size());
 
@@ -77,15 +68,13 @@ public class HealthCrawler {
         return dataList;
     }
 
-    /**
-     * 第一步：获取问题列表页的问题文本和链接
-     */
     private List<Map<String, String>> getQuestionUrlList(String questionListUrl) throws IOException {
         List<Map<String, String>> questionUrlList = new ArrayList<>();
 
         Document doc = createJsoupConnection(questionListUrl).get();
         Elements questionElements = doc.select("div.juhe_Pincon a"); // 简化选择器，直接定位a标签
 
+        int questionCount = 0;
         for (Element element : questionElements) {
             String questionText = element.text().trim();
             String href = element.attr("href").trim();
@@ -96,14 +85,15 @@ public class HealthCrawler {
                 map.put("href", href);
                 questionUrlList.add(map);
             }
+            questionCount++;
+            if (questionCount >= 10) {
+                break;
+            }
         }
 
         return questionUrlList;
     }
 
-    /**
-     * 第二步：通过问题页获取疾病详情页链接（点击"查看详情>>"）
-     */
     private List<String> getDiseaseDetailUrlList(List<Map<String, String>> questionUrlList) {
         List<String> diseaseDetailUrlList = new ArrayList<>();
 
@@ -139,9 +129,6 @@ public class HealthCrawler {
         return diseaseDetailUrlList;
     }
 
-    /**
-     * 第三步：获取疾病介绍页链接（点击"疾病介绍"）
-     */
     private List<String> getDiseaseIntroUrlList(List<String> diseaseDetailUrlList) {
         List<String> diseaseIntroUrlList = new ArrayList<>();
 
@@ -168,9 +155,6 @@ public class HealthCrawler {
         return diseaseIntroUrlList;
     }
 
-    /**
-     * 第四步：解析疾病介绍页，提取疾病名和各标签文本
-     */
     private List<Map<String, String>> parseDiseaseIntroPages(List<String> diseaseIntroUrlList) {
         List<Map<String, String>> dataList = new ArrayList<>();
 
@@ -207,7 +191,7 @@ public class HealthCrawler {
                     continue;
                 }
 
-                // 3. 循环解析每个标签页的文本
+                // 3. 循环解析每个标签页文本（核心规则：简介=第一个P，其他=所有P）
                 for (Element tagLink : tagLinks) {
                     String tagName = tagLink.text().trim();
                     String tagPageUrl = tagLink.absUrl("href"); // 自动获取完整URL
@@ -218,8 +202,16 @@ public class HealthCrawler {
                         continue;
                     }
 
-                    // 解析标签页文本
-                    String tagContent = parseTagPageContent(tagPageUrl);
+                    // 按标签名选择提取逻辑
+                    String tagContent;
+                    if (TARGET_TAG_NAME.equals(tagName)) {
+                        // 仅"简介"标签：提取第一个P标签文本
+                        tagContent = parseFirstPTagContent(tagPageUrl);
+                    } else {
+                        // 其他标签：提取所有P标签文本
+                        tagContent = parseAllPTagContent(tagPageUrl);
+                    }
+
                     diseaseMap.put(tagName, tagContent);
                 }
 
@@ -236,10 +228,38 @@ public class HealthCrawler {
         return dataList;
     }
 
-    /**
-     * 解析单个标签页的<p>文本内容
-     */
-    private String parseTagPageContent(String tagPageUrl) {
+    private String parseFirstPTagContent(String tagPageUrl) {
+        try {
+            Document tagDoc = createJsoupConnection(tagPageUrl)
+                    .timeout(TIMEOUT)
+                    .ignoreHttpErrors(true)
+                    .get();
+
+            // 优先获取疾病内容区域的第一个P标签（最相关的核心内容）
+            Element firstP = tagDoc.selectFirst("div.jib-articl-con p");
+            if (firstP == null) {
+                // 兜底：如果内容区域没有P标签，取页面第一个P标签
+                firstP = tagDoc.selectFirst("p");
+            }
+
+            if (firstP != null) {
+                String pText = firstP.text().trim();
+                // 过滤广告和空文本
+                if (!pText.isEmpty() && !pText.contains("广告") && !pText.contains("推广")) {
+                    return pText;
+                }
+            }
+
+            // 无有效P标签时返回提示
+            return "无相关文本内容";
+
+        } catch (Exception e) {
+            log.error("解析标签页 {} 的第一个P标签异常", tagPageUrl, e);
+            return "标签内容提取失败";
+        }
+    }
+
+    private String parseAllPTagContent(String tagPageUrl) {
         try {
             Document tagDoc = createJsoupConnection(tagPageUrl)
                     .timeout(TIMEOUT)
@@ -265,17 +285,11 @@ public class HealthCrawler {
             return finalContent.isEmpty() ? "无相关文本内容" : finalContent;
 
         } catch (Exception e) {
-            log.error("解析标签页 {} 异常", tagPageUrl, e);
+            log.error("解析标签页 {} 的所有P标签异常", tagPageUrl, e);
             return "标签内容提取失败";
         }
     }
 
-    /**
-     * 封装Jsoup连接配置（消除冗余代码）
-     *
-     * @param url 目标URL
-     * @return Jsoup连接对象
-     */
     private org.jsoup.Connection createJsoupConnection(String url) {
         Objects.requireNonNull(url, "请求URL不能为空");
         return Jsoup.connect(url)

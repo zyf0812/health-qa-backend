@@ -3,9 +3,12 @@ package com.health.repository;
 import com.health.entity.Entity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
+@Repository
 public interface EntityRepository extends CrudRepository<Entity, Integer> {
     //根据type查询实体并返回list
     List<Entity> findByType(String type);
@@ -15,4 +18,5 @@ public interface EntityRepository extends CrudRepository<Entity, Integer> {
     @NonNull
     List<Entity> findAll();
 
+    Optional<Entity> findByNameAndType(String name, String type);
 }
